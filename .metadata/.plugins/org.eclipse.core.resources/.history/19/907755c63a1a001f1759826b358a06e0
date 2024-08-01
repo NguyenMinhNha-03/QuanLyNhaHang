@@ -1,0 +1,270 @@
+package View;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
+
+import Controller.sqlconnect;
+import Model.DangNhap;
+import Model.NhanVien;
+
+import javax.swing.JTable;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.awt.event.ActionEvent;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+public class FormTaiKhoan extends JFrame {
+
+	private static final long serialVersionUID = 1L;
+	DefaultTableModel defaultTableModel;
+	private JPanel contentPane;
+	private JTable tableTaiKhoan;
+	private JTextField editUserName;
+	private JTextField editPassword;
+	private JComboBox cbQuyenTruyCap,cbMaNhanVien;
+	ArrayList<DangNhap>listTaiKhoan;
+	private sqlconnect con;
+	private Connection connection;
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					FormTaiKhoan frame = new FormTaiKhoan();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public FormTaiKhoan() {
+		con = new sqlconnect("jdbc:oracle:thin:@localhost:1521:orcldk", "SYS as SYSDBA", "123");
+	    connection = con.getCon();
+	    initialize();
+	}
+	public void initialize()
+	{
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 753, 360);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setLocationRelativeTo(null);
+
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		JPanel panel = new JPanel();
+		panel.setBackground(new Color(255,255, 255));
+		panel.setBorder(new LineBorder(null, 0));
+		panel.setBounds(32, 47, 394, 169);
+		getContentPane().add(panel);
+		panel.setLayout(new BorderLayout());
+		defaultTableModel =new DefaultTableModel();
+		tableTaiKhoan = new JTable(defaultTableModel);
+		tableTaiKhoan.setBackground(new Color(255,255,255));
+		panel.setLayout(new BorderLayout());
+		JScrollPane jScrollPane=new JScrollPane(tableTaiKhoan,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		panel.add(jScrollPane,BorderLayout.CENTER);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBorder(new TitledBorder(null, "Th\u00F4ng tin t\u00E0i kho\u1EA3n", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_1.setBounds(459, 25, 226, 194);
+		contentPane.add(panel_1);
+		panel_1.setLayout(null);
+		
+		JLabel lblNewLabel = new JLabel("UserName: ");
+		lblNewLabel.setBounds(21, 23, 81, 20);
+		panel_1.add(lblNewLabel);
+		
+		JLabel lblQuynTruyCp = new JLabel("Quyền truy cập:");
+		lblQuynTruyCp.setBounds(21, 110, 97, 20);
+		panel_1.add(lblQuynTruyCp);
+		
+		JLabel lblNhnVin = new JLabel("Nhân viên:");
+		lblNhnVin.setBounds(21, 151, 81, 20);
+		panel_1.add(lblNhnVin);
+		
+		 cbQuyenTruyCap = new JComboBox();
+		cbQuyenTruyCap.setBounds(135, 110, 81, 21);
+		panel_1.add(cbQuyenTruyCap);
+		
+		 cbMaNhanVien = new JComboBox();
+		cbMaNhanVien.setBounds(135, 151, 81, 21);
+		panel_1.add(cbMaNhanVien);
+		
+		editUserName = new JTextField();
+		editUserName.setBounds(111, 24, 105, 19);
+		panel_1.add(editUserName);
+		editUserName.setColumns(10);
+		
+		editPassword = new JTextField();
+		editPassword.setBounds(111, 67, 105, 19);
+		panel_1.add(editPassword);
+		editPassword.setColumns(10);
+		
+		JLabel lblNewLabel_2_1 = new JLabel("Password: ");
+		lblNewLabel_2_1.setBounds(21, 66, 81, 20);
+		panel_1.add(lblNewLabel_2_1);
+		
+		JButton btnThemTaiKhoan = new JButton("Thêm tài khoản");
+		btnThemTaiKhoan.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		btnThemTaiKhoan.setBounds(420, 244, 140, 21);
+		contentPane.add(btnThemTaiKhoan);
+		
+		JButton btnXoaTaiKhoan = new JButton("Xóa tài khoản");
+		btnXoaTaiKhoan.setBounds(581, 244, 132, 21);
+		contentPane.add(btnXoaTaiKhoan);
+		
+		JButton btnCapNhatTaiKhoan = new JButton("Cập nhật tài khoản");
+		btnCapNhatTaiKhoan.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		btnCapNhatTaiKhoan.setBounds(494, 280, 170, 21);
+		contentPane.add(btnCapNhatTaiKhoan);
+		listTaiKhoan=getListTaiKhoan();
+		defaultTableModel=(DefaultTableModel)tableTaiKhoan.getModel();
+		defaultTableModel.setColumnIdentifiers(new Object[] {
+				"User Name","Password","Quyen Truy Cap"
+		});
+		tableTaiKhoan.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				// TODO Auto-generated method stub
+				if(tableTaiKhoan.getSelectedRow() >=0)
+				{
+					DangNhap dangNhap = listTaiKhoan.get(tableTaiKhoan.getSelectedRow());
+		            editUserName.setText(dangNhap.getUserName());
+		            editPassword.setText(dangNhap.getPassword());
+		            cbQuyenTruyCap.setSelectedItem(dangNhap.getQuyenTruyCap());
+		            cbMaNhanVien.setSelectedItem(dangNhap.getMaNhanVien());	           
+				}
+			}
+		});
+		showTableTaiKhoan();
+		showCbQuyenTruyCap();
+		showCbNhanVien();
+	}
+
+	public ArrayList<DangNhap>getListTaiKhoan()
+	{
+		ArrayList<DangNhap>listDN=new ArrayList<DangNhap>();
+		String sqlString="Select *from taikhoan";
+		try {
+			PreparedStatement preparedStatement=connection.prepareStatement(sqlString);
+			ResultSet resultSet=preparedStatement.executeQuery();
+			while(resultSet.next())
+			{
+				DangNhap dangNhap=new DangNhap();
+				dangNhap.setUserName(resultSet.getString("username"));
+				dangNhap.setPassword(resultSet.getString("password"));
+				dangNhap.setQuyenTruyCap(resultSet.getInt("quyentruycap"));
+				dangNhap.setMaNhanVien(resultSet.getString("manv"));;
+	
+				listDN.add(dangNhap);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return listDN;
+	}
+	public void showTableTaiKhoan()
+	{
+		defaultTableModel.setRowCount(0);
+		CallableStatement callableStatement=null;
+		ResultSet resultSet=null;
+		String sql="{Call hien_thi_tai_khoan(?)}";
+		try {
+			callableStatement=connection.prepareCall(sql);
+			callableStatement.registerOutParameter(1, java.sql.Types.REF_CURSOR);
+			callableStatement.execute();
+			resultSet=(ResultSet)callableStatement.getObject(1);
+			
+			while(resultSet.next())
+			{
+				String usernameString=resultSet.getString("username");
+				String passwordString=resultSet.getString("password");
+				String quyentruycapString=resultSet.getString("quyentruycap");
+				defaultTableModel.addRow(new Object[] {usernameString,passwordString,quyentruycapString});
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Lỗi khi hiển thị tài khoản"+e.getMessage());
+		} finally
+		{
+			try {
+				if(resultSet !=null) resultSet.close();
+				if(callableStatement !=null)
+				callableStatement.close();
+			} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+			}
+		}
+	}
+	public void showCbQuyenTruyCap()
+	{
+		try {
+			String sqlString="Select quyentruycap from taikhoan Where madn=1 or madn=2";
+			PreparedStatement preparedStatement = connection.prepareStatement(sqlString);
+			ResultSet resultSet=preparedStatement.executeQuery();
+			while(resultSet.next())
+			{
+				cbQuyenTruyCap.addItem(resultSet.getString("quyentruycap"));
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
+	public void showCbNhanVien()
+	{
+		try {
+			String sqlString="Select manhanvien from nhanvien";
+			PreparedStatement preparedStatement = connection.prepareStatement(sqlString);
+			ResultSet resultSet=preparedStatement.executeQuery();
+			while(resultSet.next())
+			{
+				cbMaNhanVien.addItem(resultSet.getString("manhanvien"));
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
+}
